@@ -178,17 +178,6 @@ function grapher(){
     for(var row = 0; row < data.length; row++)
         dataset.push({label: "POS" + data[row][0], "Uppercase":data[row][1], "Lowercase":data[row][2], "Number": data[row][3], "Symbol":data[row][4], "White Space":data[row][5]});
 
-	/*//get total characters in 1 position
-    var floor = Math.floor;
-    var converted = data[0].map(function(item) {
-        return floor(item);
-    });
-    var totalChar = converted.reduce(add, 0);  //holds max # of characters in one position, used to calculate percentage
-    function add(a, b) {
-        return a + b;
-    }
-    alert(totalChar);*/
-
     var margin = {top: (parseInt(d3.select('body').style('height'), 10)/20), right: (parseInt(d3.select('body').style('width'), 10)/20), bottom: (parseInt(d3.select('body').style('height'), 10)/6), left: (parseInt(d3.select('body').style('width'), 10)/20)},
             width = parseInt(d3.select('body').style('width'), 10) - margin.left - margin.right,
             height = parseInt(d3.select('body').style('height'), 10) - margin.top - margin.bottom;
@@ -270,7 +259,6 @@ bar_enter.append("rect")
     function add(a, b) {
         return a + b;
     }
-    alert(totalChar);
 
 bar_enter.append("text")
     .text(function(d) { 
