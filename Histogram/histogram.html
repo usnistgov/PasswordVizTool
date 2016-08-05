@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<style>
+/* Henry Chen SHIP 2016
+This program is created by Henry Chen as part of his 2016 SHIP (Summer High School Intern Program) project, sponsored by NIST (National Institute of Standards and Technology), under DOC (US Department of Commerce).
+Script that reads in a file chosen by the user, and creates a frequency histogram from the file data.
+*/
+</style>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style> /* CUST0: Determines name of browser (title) */ </style>
+    <title>Password Frequency Grapher</title>
+    <style>
+    
+    	/* CUST1: Determines base properties of appearance */
+        html {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 100%;
+            background: #333; /* Determines background color (background: #htmlcolor) */
+        }
+        
+        /* CUST2: Determines properties of the title box*/ 
+        #page-wrapper {
+            width: 600px; /* Determines width (width: Npx) */
+            background: #FFF; /* Determines color of browser background (background: #htmlcolor) */
+            padding: 1em; /* Determines padding (padding: #em) */
+            margin: 1em auto; /* Determines margine (margine: #em auto) */
+            min-height: 300px; /* Determines height (min-height: Npx) */
+            border-top: 5px solid #69c773; /* Determines properties of the banner (border-top: Npx type #htmlcolor) */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); /* Determines color and size of shadow (box-shadow: # #px #px rgbacode) */
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+        
+        #fileDisplayArea {
+            margin-top: 2em;
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* CUST3: Determines text font */
+        body {
+            font: 10px sans-serif; 
+        }
+        
+        /* CUST4: Determines axis properties */
+        .axis text {
+            fill: #CCCCCC; /* Determines color of axis text (fill: #htmlcolor) */
+            text-shadow: -1px -1px 0 #212121, 1px -1px 0 #212121, -1px 1px 0 #212121, 1px 1px 0 #212121; /* Determines shadow size and color (#px #px # #htmlcolor) */
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000; /* adds stroke to the axis */
+            shape-rendering: crispEdges;
+        }
+        
+        /* CUST5: Determines graph properties */
+        .bar {
+            fill: orange;  /* Determines bar graph's bar color (fill: color) */
+            fill-opacity: .9; /* Determines opacity of bar graph's bars (fill-opacity: #)*/
+        }
+        
+        .bar:hover {
+            fill: deepskyblue; /* Determines bar graph's bar color when hovered over (fill: color) */
+        }
+        
+        .x.axis path {
+            display: none;
+            fill: white;
+        }
+        
+        label {
+            position: absolute;
+            top: 10px; /* Determines positioning of checkbox (top: #px; right: #px) */
+            right: 10px;
+        }
+        
+        /* CUST6: Determines tooltip properties */
+        .d3-tip {
+            line-height: 1;
+            font-weight: bold; /* Determines font type (font-weight: type) */
+            padding: 12px; /* Determines text padding (padding: Npx) */
+            background: rgba(0, 0, 0, 0.8); /* Determines background color of tooltip (background: rgbacode) */
+            color: #fff; /* Determines color of tooltip (color: #htmlcolor) */
+            border-radius: 2px; /* Determines tooltip border radius (border-radius: Npx) */
+        }
+        /* Creates a small triangle extender for the tooltip */
+        
+        .d3-tip:after {
+            box-sizing: border-box;
+            display: inline;
+            font-size: 10px; /* Determines tooltip font size (font-size: Npx) */
+            width: 100%;
+            line-height: 1;
+            color: rgba(0, 0, 0, 0.8);
+            content: "\25BC";
+            position: absolute;
+            text-align: center; /* Determines text alignment (text-align: alignment) */
+        }
+        /* Style northward tooltips differently */
+        
+        .d3-tip.n:after {
+            margin: -1px 0 0 0;
+            top: 100%;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="page-wrapper">
+    
+    	<style> /* CUST7: Change title and text of box */</style>
+        <h1>Bar Chart Generator</h1>
+        <div>
+            Select a text file: <input id="fileInput" type="file">
+        </div>
+        <pre id="fileDisplayArea"></pre>
+        <pre>
+
+    </pre>
+        <pre></pre>
+    </div><label><input type="checkbox"> 
+    <font color="white">Sort values</font></label> <font color="white"> <script>/* CUST8: Change checkbox text & color (font color = "color," "text" (change "Sort Value" to change text)) */</script>
+    <script src="https://d3js.org/d3.v3.min.js">
+    </script> 
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js">
+    </script> 
+    <script>
+
+    var freq = []; //will hold data from file
+
+    window.onload = function() {
+     
+        //get data from file
+        var fileInput = document.getElementById('fileInput');
+        var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+        fileInput.addEventListener('change', function(e) {
+            var file = fileInput.files[0];
+            var textType = /text.*/;
+
+            if (file.type.match(textType)) {
+                var reader = new FileReader();
+        var str = '';
+                reader.onload = function(e) {
+                  str = reader.result;
+          
+          freq = str.split('\t');
+
+          fileDisplayArea.innerHTML = "Graphing file \"" + file.name + "\"";
+          grapher();
+                }
+                reader.readAsText(file);    
+        
+            } else {
+                fileDisplayArea.innerText = "File not supported!"
+            }
+        }); 
+    }
+            
+    function grapher(){
+
+        var margin = {
+                top: 40,
+                right: 20,
+                bottom: 30,
+                left: 40
+            },
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .1);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+            	/* CUST9: Change tooltip content & color (for color: span style='color:yourcolor'>)*/
+                return d.letter + "  <strong>Frequency:<\/strong> <span style='color:red'>" + d.frequency + "<\/span>";
+            })
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        svg.call(tip);
+
+        //trick javascript into scaling the y-axis appropriately without changing the values
+        for (var i = 0; i < freq.length; i++)
+            freq[i] = freq[i] - 1 + 1;
+
+        // The new data variable.
+        var horiAxis = [];
+
+		/* create x-axis: upper, lower, number, symbols, and white spaces */
+		//uppercase
+        for (var i = 65; i < 91; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        //lower case
+        for (var i = 97; i < 123; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        //0-9
+        for (var i = 48; i < 58; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        //symbols
+        for (var i = 33; i < 48; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        for (var i = 58; i < 65; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        for (var i = 91; i < 97; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        for (var i = 123; i < 127; i++)
+            horiAxis.push(String.fromCharCode(i));
+
+        horiAxis.push("WS");
+
+        var data = [];
+
+        for (var i = 0; i < horiAxis.length; i++)
+            data.push({
+                letter: horiAxis[i],
+                frequency: freq[i],
+                order: i
+            });
+
+        function type(d) {
+            d.frequency = +d.frequency;
+            return d;
+        }  
+
+        x.domain(data.map(function(d) {
+            return d.letter;
+        }));
+        y.domain([0, d3.max(data, function(d) {
+            return d.frequency;
+        })]);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Frequency");
+
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) {
+                return x(d.letter);
+            })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) {
+                return y(d.frequency);
+            })
+            .attr("height", function(d) {
+                return height - y(d.frequency);
+            })
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide);
+          
+           d3.selectAll("input").on("change", change);
+
+    var sortTimeout = setTimeout(function() {
+    d3.selectAll("input").property("checked", true).each(change);
+    }, 2000);
+
+    //sort
+    function change() {
+    clearTimeout(sortTimeout);
+
+    // Copy-on-write since tweens are evaluated after a delay.
+    var x0 = x.domain(data.sort(this.checked
+
+    	/* CUST10: Change graph sort */	
+    	/* Use this: ? function(a, b) { return a.frequency - b.frequency; } to sort ascending */
+        ? function(a, b) { return b.frequency - a.frequency; }
+
+        /* Use this: : function(a, b) { return d3.ascending(b.order, a.order); }) to sort from space to A*/
+        : function(a, b) { return d3.ascending(a.order, b.order); })
+        
+        .map(function(d) { return d.letter; }))
+        .copy();
+
+    svg.selectAll(".bar")
+    	/* Use this: .sort(function(a, b) { return x0(b.letter) - x0(a.letter); }); to sort smaller values first*/
+        .sort(function(a, b) { return x0(a.letter) - x0(b.letter); });
+
+    var transition = svg.transition().duration(750),
+        delay = function(d, i) { return i * 50; };
+
+    transition.selectAll(".bar")
+        .delay(delay)
+        .attr("x", function(d) { return x0(d.letter); });
+
+    transition.select(".x.axis")
+        .call(xAxis)
+      .selectAll("g")
+        .delay(delay);
+    }
+    }
+    </script></font>
+</body>
+</html><script type="text/javascript">
+
+	var g_duration = 118;
+var g_iisLatency = 2;
+var g_requireJSDone = new Date().getTime();
+
+</script><script type="text/javascript">
+
+	var g_duration = 77;
+var g_iisLatency = 2;
+var g_requireJSDone = new Date().getTime();
+
+</script>
