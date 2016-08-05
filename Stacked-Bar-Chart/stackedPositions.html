@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<style>
+/* Henry Chen
+This program is created by Henry Chen as part of his 2016 SHIP (Summer High School Intern Program) project, sponsored by NIST (National Institute of Standards and Technology), under DOC (US Department of Commerce).
+Script that reads in a file chosen by the user, and creates a stacked bar chart from the file data
+*/
+</style>
+<meta charset="utf-8">
+    <style> /* CUST0: Determines name of browser (title) */ </style>
+    <title>Password Position Grapher</title>
+<style>
+	/* CUST1: Determines base properties of appearance */
+	html {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 100%;
+        background: #333; /* Determines background color (background: #htmlcolor */
+    }
+
+	/* CUST2: Determines properties of the title box*/ 
+    #page-wrapper {
+        width: 600px; /* Determines width (width: #px) */
+        background: white; /* Determines color of browser background (background: #htmlcolor) */
+        padding: 1em; /* Determines padding (padding: #em) */
+        margin: 1em auto; /* Determines margine (margine: #em auto) */
+        min-height: 300px; /* Determines height (min-height: #px) */
+        border-top: 5px solid #cc0066; /* Determines properties of the banner (border-top: #px type #htmlcolor) */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); /* Determines color and size of shadow (box-shadow: # #px #px rgbacode) */
+    }
+    
+	/* CUST3: Determines text font */
+    h1 {
+        margin-top: 0;
+    }
+
+    #fileDisplayArea {
+        margin-top: 2em;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        width: 960px;
+        height: 500px;
+        position: relative;
+    }
+    svg {
+        width: 100%;
+        height: 100%;
+        position: center;
+    }
+    text{
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    
+    /* CUST4: Change tooltip properties */
+    .toolTip {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        position: absolute;
+        display: none;
+        width: auto;
+        height: auto;
+        background: none repeat scroll 0 0 white;
+        border: 0 none;
+        border-radius: 8px 8px 8px 8px;
+        box-shadow: -3px 3px 15px #888888;
+        color: black;
+        font: 12px sans-serif;
+        padding: 5px;
+        text-align: center;
+    }
+    
+    /* CUST5: Change legend text properties */
+    .legendLinear text.label{
+        fill: #CCCCCC;/* Color of legend text */
+        text-shadow: -1px -1px 0 #212121, 1px -1px 0 #212121, -1px 1px 0 #212121, 1px 1px 0 #212121; /* Shadow that acts as a stroke for the legend text*/
+    }
+    .legend {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 60%;
+    }
+
+    text {
+        font: 10px sans-serif;
+    }
+    .axis text {
+        font: 10px sans-serif;
+        fill: #CCCCCC;
+        text-shadow: -1px -1px 0 #212121, 1px -1px 0 #212121, -1px 1px 0 #212121, 1px 1px 0 #212121;
+    }
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    .x.axis path {
+        display: none;
+    }
+</style>
+<body>
+<div id="page-wrapper">
+		<style> /* CUST6: Change title box text */</style>
+        <h1>Stacked Chart Generator</h1>
+        <div>
+            Select a text file: <input id="fileInput" type="file">
+        </div>
+        <pre id="fileDisplayArea"></pre>
+        <pre>
+
+    </pre>
+        <pre></pre>
+    </div>
+    <script src="http://d3js.org/d3.v3.min.js">
+    </script> 
+    <script src=
+    "https://cdnjs.cloudflare.com/ajax/libs/d3-legend/1.7.0/d3-legend.min.js">
+    </script> 
+    <script>
+
+    var data = []; //will hold data from file
+
+    window.onload = function(){
+    var fileInput = document.getElementById('fileInput');
+    var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+    //read in file
+    fileInput.addEventListener('change', function(e) {
+        var file = fileInput.files[0];
+		var textType = /text.*/
+		
+		if(file.type.match(textType)){
+        var reader = new FileReader();
+        var str = '';
+        reader.onload = function(e) {
+                            str = reader.result;
+
+                            var temp = str.split('\n');
+                            for(var i = 0; i < temp.length; i++)
+                                data.push(temp[i].split('\t'));
+
+                            fileDisplayArea.innerHTML = "Graphing file \"" + file.name + "\"";
+                            grapher();
+                        }
+        reader.readAsText(file);
+        }else{
+        	fileDisplayArea.innerText = "File not supported!";
+        }
+    });
+    }
+
+function grapher(){
+    function wrap(text, width) {
+        text.each(function() {
+            var text = d3.select(this),
+                    words = text.text().split(/\s+/).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y"),
+                    dy = parseFloat(text.attr("dy")),
+                    tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    line = [word];
+                    tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                }
+            }
+        });
+    }
+
+    var dataset = [];
+    for(var row = 0; row < data.length; row++)
+        dataset.push({label: "POS" + data[row][0], "Uppercase":data[row][1], "Lowercase":data[row][2], "Number": data[row][3], "Symbol":data[row][4], "White Space":data[row][5]});
+
+	/*//get total characters in 1 position
+    var floor = Math.floor;
+    var converted = data[0].map(function(item) {
+        return floor(item);
+    });
+    var totalChar = converted.reduce(add, 0);  //holds max # of characters in one position, used to calculate percentage
+    function add(a, b) {
+        return a + b;
+    }
+    alert(totalChar);*/
+
+    var margin = {top: (parseInt(d3.select('body').style('height'), 10)/20), right: (parseInt(d3.select('body').style('width'), 10)/20), bottom: (parseInt(d3.select('body').style('height'), 10)/6), left: (parseInt(d3.select('body').style('width'), 10)/20)},
+            width = parseInt(d3.select('body').style('width'), 10) - margin.left - margin.right,
+            height = parseInt(d3.select('body').style('height'), 10) - margin.top - margin.bottom;
+    var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .1,.3);
+    var y = d3.scale.linear()
+            .rangeRound([height, 0]);
+
+	/* CUST7: Change color of graph */
+    //color of graph
+    var colorRange = ["#a05d56", "#d0743c", "#ff8c00", "#FFA600", "#FFC000", "#FFDA00"];//html color codes
+    var color = d3.scale.ordinal()
+            .range(colorRange);
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+	//makes y axis scale from 0 to 100%
+	var yScale = d3.scale.linear()
+					.domain([0, 100])
+					.range([391, 0]);
+    var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left")
+            .tickFormat(d3.format(".2s"));
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var divTooltip = d3.select("body").append("div").attr("class", "toolTip");
+    color.domain(d3.keys(dataset[0]).filter(function(key) { return key !== "label"; }));
+    dataset.forEach(function(d) {
+        var y0 = 0;
+        d.values = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
+        d.total = d.values[d.values.length - 1].y1;
+    });
+
+    x.domain(dataset.map(function (d){return d.label; }));
+    y.domain([0, d3.max(dataset, function(d) { return d.total; })]);
+    svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+    svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 9)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Frequency %"); /* CUST8: Change Y-Axis label (.text("label")) */
+    var bar = svg.selectAll(".label")
+            .data(dataset)
+            .enter().append("g")
+            .attr("class", "g")
+            .attr("transform", function(d) { return "translate(" + x(d.label) + ",0)"; });
+    svg.selectAll(".x.axis .tick text")
+            .call(wrap, x.rangeBand());
+
+    var bar_enter = bar.selectAll("rect")
+    .data(function(d) { return d.values; })
+    .enter();
+
+bar_enter.append("rect")
+    .attr("width", x.rangeBand())
+    .attr("y", function(d) { return y(d.y1); })
+    .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+    .style("fill", function(d) { return color(d.name); });
+
+	//get total characters in 1 position
+    var floor = Math.floor;
+    var converted = data[0].map(function(item) {
+        return floor(item);
+    });
+    var totalChar = converted.reduce(add, 0);  //holds max # of characters in one position, used to calculate percentage
+    function add(a, b) {
+        return a + b;
+    }
+    alert(totalChar);
+
+bar_enter.append("text")
+    .text(function(d) { 
+            var percCalc = (d.y1 - d.y0)/totalChar*100;
+            return d3.format(".2s")(percCalc)+"%"; /* CUST9: Change static bar value display (hint: ".2s" is the # of digits shown) */
+        })
+    .attr("y", function(d) { return y(d.y1)+(y(d.y0) - y(d.y1))/2; })
+    .attr("x", x.rangeBand()/3)
+    .style("fill", '#ffffff');
+    
+    bar
+            .on("mousemove", function(d){
+                divTooltip.style("left", d3.event.pageX+10+"px");
+                divTooltip.style("top", d3.event.pageY-25+"px");
+                divTooltip.style("display", "inline-block");
+                var elements = document.querySelectorAll(':hover');
+                l = elements.length
+                l = l-1
+                element = elements[l].__data__
+                value = (element.y1 - element.y0)/totalChar * 100;
+                divTooltip.html((d.label)+"<br>"+element.name+"<br>"+value.toFixed(3)+"%"); /* CUST10: Change active tooltip display (divTooltip.html(text)) (extra info: value.toFixed(# of decimals shown) */
+            });
+    bar
+            .on("mouseout", function(d){
+                divTooltip.style("display", "none");
+            });
+    svg.append("g")
+            .attr("class", "legendLinear")
+            .attr("transform", "translate(0,"+(height+30)+")");
+    var legend = d3.legend.color()
+            .shapeWidth(height/4)
+            .shapePadding(10)
+            .orient('horizontal')
+            .scale(color);
+    svg.select(".legendLinear")
+            .call(legend);
+}
+</script>
+</body><script type="text/javascript">
+
+	var g_duration = 104;
+var g_iisLatency = 3;
+var g_requireJSDone = new Date().getTime();
+
+</script><script type="text/javascript">
+
+	var g_duration = 100;
+var g_iisLatency = 2;
+var g_requireJSDone = new Date().getTime();
+
+</script>
