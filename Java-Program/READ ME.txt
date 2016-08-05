@@ -1,0 +1,33 @@
+Henry Chen
+* Part One of the Password Security Data Visualization Project
+
+SETUP (Only needed if you only have the raw .java files)
+1. Check your computer’s processor bit (32-bit or 64-bit)
+2. Download Eclipse for your computer’s version
+3. Create or select a workspace
+4. Create a new Java Project
+5. Paste or move the two java files into your project
+6. Hit “Run” (Can also right click -> Run As -> Java Application
+
+JAVA PROGRAM
+1. Run the program
+2. Enter the amount of positions you wish to analyze
+3. Select the .tsv file of passwords
+4. Wait for the program to run
+5. Done!
+
+STEPS TO ENSURE PROPER DATA ACCESS
+1. Open Excel (MUST be opened FROM Excel)
+2. File -> Open
+3. Select the Text File named in this format: originalTitle.txt_pew PWD_year-month-day at hour.minute.second AM (or PM)
+4. Check "Delimited" and hit Next
+5. Check “Tab”
+6. Make sure "Treat consecutive delimiters as one" is checked (should be checked automatically; if not, check it)
+7. Select “{none}” from the “Text qualifier” combo box
+8. Hit Finish!
+9. When saving, make sure to “Save As” and change the File Format from “.txt” to “.xls”
+
+Disclaimer:
+“The United States Department of Commerce (DOC) GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. DOC has relinquished control of the information and no longer has responsibility to protect the integrity, confidentiality, or availability of the information. Any claims against the Department of Commerce stemming from the use of its GitHub project will be  governed by all applicable Federal law.Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.”
+
+
