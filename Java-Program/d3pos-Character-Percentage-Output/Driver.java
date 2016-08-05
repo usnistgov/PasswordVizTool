@@ -149,7 +149,7 @@ public class Driver {
 				}
 
 				info.add(position);
-			}//fix
+			}
 
 			//output to file
 			int maxRows = info.size() - 1;
@@ -164,7 +164,7 @@ public class Driver {
 				for(int col = 1; col < maxCols; col++)
 					total += info.get(row).get(col);
 
-				outFile.write(info.get(row).get(0) + tab);
+				outFile.write(row + 1 + tab);
 
 				for(int col = 1; col < maxCols; col++)
 					outFile.write(((double)info.get(row).get(col)/(total)*100) + tab);
