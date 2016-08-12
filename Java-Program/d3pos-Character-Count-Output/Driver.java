@@ -1,5 +1,4 @@
-/*Henry Chen
- * This program is created by Henry Chen as part of his 2016 SHIP (Summer High School Intern Program) project, sponsored by NIST (National Institute of Standards and Technology), under DOC (US Department of Commerce).
+/* This program was created by Henry Chen as part of his 2016 SHIP (Summer High School Intern Program) project, sponsored by NIST (National Institute of Standards and Technology), under DOC (US Department of Commerce).
  * Part One of the Password Data Analysis and Visualization Project
  */
 
